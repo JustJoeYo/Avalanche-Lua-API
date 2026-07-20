@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**93** scopes · **1212** members · **15** globals · **36** callbacks · **3** aliases
+**94** scopes · **1224** members · **15** globals · **36** callbacks · **3** aliases
 
 **Trust tiers:** `safe` (available to every script, default) · `native` (low-level / powerful — enable explicitly) · `trusted` (restricted).
 
@@ -22,6 +22,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
   - [UserCmd](#usercmd)
   - [CUserCmd](#cusercmd)
   - [CallbackHandle](#callbackhandle)
+  - [AddedCallbackHandle](#addedcallbackhandle)
   - [MenuNode](#menunode)
   - [File](#file)
   - [GameEvent](#gameevent)
@@ -184,6 +185,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `get_name` | `:get_name() -> string` | safe |  |
 | `get_class_name` | `:get_class_name() -> string` | safe |  |
 | `get_scaled_property` | `:get_scaled_property(key: string) -> number` | safe |  |
+| `list_properties` | `:list_properties() -> table` | safe | Enumerate every authored VData property as { PropertyName = scaledValue } (force-populated, upgrade-aware). Use it to discover a property's EXACT field name. |
 | `get_property` | `:get_property(name: string) -> number` | safe |  |
 | `get_cast_range` | `:get_cast_range() -> number` | safe |  |
 | `get_aoe_radius` | `:get_aoe_radius() -> number` | safe |  |
@@ -248,7 +250,8 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `has_any_particle` | `:has_any_particle(...: string\|string[]) -> boolean` | safe | Any substring matches a particle recently created on this pawn. Accepts EITHER varargs strings `has_any_particle("a","b")` OR an array table `has_any_particle({"a","b"})` — both shapes work on every has_any_particle binding. No args => any recent particle at all. For anything TIMING-sensitive use get_particle_age instead: this stays true for the tracker's full 3s TTL. |
 | `get_particle_age` | `:get_particle_age(...: string\|string[]) -> number\|nil` | safe | Seconds since the FRESHEST matching particle was created on this pawn, or nil if none is within the tracker's ~3s TTL. No args => age of the most recent particle of any path. Use this over has_any_particle whenever the question is a timing one (e.g. 'is this windup still live?'), since the boolean cannot distinguish a charge starting now from one that finished 3 seconds ago. |
 | `get_abilities` | `:get_abilities() -> Ability[]` | safe |  |
-| `get_ability` | `:get_ability(name: string) -> Ability\|nil` | safe |  |
+| `get_ability` | `:get_ability(name: string) -> Ability\|nil` | safe | Resolve an ability by class name (FUZZY substring match — e.g. "citadel_ability_melee" also matches CCitadel_Ability_MeleeParry). |
+| `get_ability_exact` | `:get_ability_exact(class: string) -> Ability\|nil` | safe | Resolve an ability by EXACT binding-class name (byte-for-byte), avoiding get_ability's fuzzy substring match. |
 | `get_ability_by_slot` | `:get_ability_by_slot(slot: integer) -> Ability\|nil` | safe |  |
 | `get_bone_position` | `:get_bone_position(bone_name: string) -> Vector3` | safe |  |
 | `get_modifiers` | `:get_modifiers() -> Modifier[]` | safe |  |
@@ -387,8 +390,18 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 | Member | Signature | Tier | Description |
 |---|---|---|---|
-| `set` | `:set(fn: function)` | safe |  |
-| `unset` | `:unset()` | safe | Clear this channel's handler for the owning script (single-handler-per-channel; last :set wins). |
+| `set` | `:set(fn: function)` | safe | Install/replace the PRIMARY handler for this channel (last :set wins). Coexists with any :add handlers. |
+| `unset` | `:unset()` | safe | Clear this channel's PRIMARY handler for the owning script (:add handlers are unaffected). |
+| `add` | `:add(fn: function) -> AddedCallbackHandle` | safe | Add an ADDITIONAL handler (multiple coexist). Primary :set + every :add all fire, in registration order, each independently guarded. Returns a handle to remove just this one. |
+| `remove` | `:remove(handle: AddedCallbackHandle) -> boolean` | safe | Remove an added handler previously returned by :add (alternative to handle:remove()). |
+
+### AddedCallbackHandle
+
+`usertype` · tier `safe` — Handle returned by callback.on_*:add(fn); :remove() deletes just that one added handler.
+
+| Member | Signature | Tier | Description |
+|---|---|---|---|
+| `remove` | `:remove() -> boolean` | safe | Delete just this added handler; leaves the primary and other added handlers untouched. One-shot. |
 
 ### MenuNode
 
@@ -705,6 +718,10 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 |---|---|---|---|
 | `latency` | `.latency: number` | safe | Live CNetChan round-trip latency in SECONDS, resolved on read via an __index metatable (agrees with get_latency(); channel 0). 0.0 when disconnected. (Was a dead static 0.0 snapshot before — now genuinely live.) |
 | `get_latency` | `net_channel.get_latency(nChannel?: integer) -> number` | safe | Live CNetChan round-trip latency in SECONDS (real, live-verified vtable read - NOT a stub). nChannel defaults to 0 (the populated client channel); returns 0.0 when disconnected. |
+| `packet_loss` | `net_channel.packet_loss(flow?: integer) -> number` | safe | Live CNetChan average packet LOSS as a fraction 0..1 (x100 for %). Same CNetChan as get_latency (vtable[12] GetAvgLoss). flow defaults to 1 = INCOMING (server->client); pass 0 for OUTGOING. 0.0 when disconnected. |
+| `choke` | `net_channel.choke(flow?: integer) -> number` | safe | Live CNetChan average CHOKE as a fraction 0..1 (x100 for %). Same CNetChan as get_latency (vtable[13] GetAvgChoke). flow defaults to 1 = INCOMING; pass 0 for OUTGOING. 0.0 when disconnected. |
+| `avg_data` | `net_channel.avg_data(flow?: integer) -> number` | safe | Live CNetChan average throughput in BYTES/sec for the flow (vtable[15] GetAvgData). flow defaults to 1 = INCOMING. 0.0 when disconnected. |
+| `avg_packets` | `net_channel.avg_packets(flow?: integer) -> number` | safe | Live CNetChan average PACKETS/sec for the flow (vtable[16] GetAvgPackets). flow defaults to 1 = INCOMING. 0.0 when disconnected. |
 | `get_tick` | `net_channel.get_tick() -> integer` | safe | Current sim tick count (CGlobalVarsBase::m_nTickCount). |
 | `get_server_tick` | `net_channel.get_server_tick() -> integer` | safe | Server tick - mirrors the sim tick on this build (no distinct client/server tick source is exposed). |
 | `get_interval_per_tick` | `net_channel.get_interval_per_tick() -> number` | safe | Seconds per tick (m_flIntervalPerTick; 1/64 fallback). |
@@ -1217,7 +1234,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `Polyline` | `Polyline` | safe |  |
 | `Shadow` | `Render.Shadow(p1: Vec2, p2: Vec2, color: Color, size?: number, rounding?: number)` | safe | Soft drop-shadow behind a rect. |
 | `ShadowCircle` | `Render.ShadowCircle(center: Vec2, radius: number, color: Color, size?: number)` | safe | Soft drop-shadow behind a circle. |
-| `Gradient` | `Render.Gradient(p1: Vec2, p2: Vec2, c_tl: Color, c_tr: Color, c_bl: Color, c_br: Color, rounding?: number)` | safe | Four-corner gradient-filled rect. |
+| `Gradient` | `Render.Gradient(p1: Vec2, p2: Vec2, c_tl: Color, c_tr: Color, c_bl: Color, c_br: Color, rounding?: number)` | safe | Four-corner gradient-filled rect. `rounding` is honored (rounded-rect fan with per-vertex bilinear corner colors); 0/omitted = square corners. |
 | `CircleGradient` | `Render.CircleGradient(center: Vec2, radius: number, inner: Color, outer: Color)` | safe | Radial inner-to-outer gradient circle. |
 | `OutlineGradient` | `Render.OutlineGradient(p1: Vec2, p2: Vec2, c_top: Color, c_bottom: Color, thickness?: number)` | safe | Top-to-bottom gradient rect outline. |
 | `Blur` | `Render.Blur(p1: Vec2, p2: Vec2, strength?: number, alpha?: number, rounding?: number)` | safe | Blur the backbuffer under a rect. |
@@ -1491,6 +1508,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `keys` | `db.keys() -> string[]` | safe | List all string keys. |
 | `clear` | `db.clear()` | safe | Remove every key in this script's namespace. |
 | `save` | `db.save()` | safe | Force a flush to disk now (bypasses the ~1.5s throttle). |
+| `__fieldstyle` | `.__fieldstyle: note` | safe | Field-style access is supported (umbrella_compat): db.foo reads through to db.get("foo") and db.foo = v writes through to db.set("foo", v). The explicit methods shadow same-named stored keys. |
 
 ### convar
 
@@ -1653,6 +1671,8 @@ _No members._
 | Member | Signature | Tier | Description |
 |---|---|---|---|
 | `curtime` | `global_vars.curtime() -> number` | safe | m_flCurrentTimeRaw (RAW clock; 0.0 if globals null). |
+| `latency_incoming` | `global_vars.latency_incoming() -> number` | safe | Local network latency in SECONDS (same source as net_channel.get_latency; a true in/out split awaits the CNetChan flow RE). 0.0 when not connected. |
+| `latency_outgoing` | `global_vars.latency_outgoing() -> number` | safe | Local network latency in SECONDS (see latency_incoming). 0.0 when not connected. |
 | `tickcount` | `global_vars.tickcount() -> integer` | safe | m_nTickCount (0 if null). |
 | `framecount` | `global_vars.framecount() -> integer` | safe | m_nFrameCount (0 if null). |
 | `interval_per_tick` | `global_vars.interval_per_tick() -> number` | safe | m_flIntervalPerTick (0.015 fallback if null). |
