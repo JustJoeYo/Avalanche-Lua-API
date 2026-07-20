@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**93** scopes · **1195** members · **15** globals · **36** callbacks · **3** aliases
+**93** scopes · **1212** members · **15** globals · **36** callbacks · **3** aliases
 
 **Trust tiers:** `safe` (available to every script, default) · `native` (low-level / powerful — enable explicitly) · `trusted` (restricted).
 
@@ -418,6 +418,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `Image` | `:Image(image: string) -> MenuNode` | safe |  |
 | `SetCallback` | `:SetCallback(fn: function) -> MenuNode` | safe |  |
 | `Visible` | `:Visible(v: boolean) -> MenuNode` | safe |  |
+| `Remove` | `:Remove() -> boolean` | safe | Permanently unlink this node (and its descendants) from the menu tree — for probe/temporary nodes that only Visible(false) could hide before. ConfigStore values keyed by its path are kept. |
 | `Disabled` | `:Disabled(v: boolean) -> MenuNode` | safe |  |
 | `VisibleCondition` | `:VisibleCondition(fn: fun():boolean) -> MenuNode` | safe |  |
 | `DisableCondition` | `:DisableCondition(fn: fun():boolean) -> MenuNode` | safe |  |
@@ -460,7 +461,10 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `read` | `:read(...) -> string` | native |  |
 | `write` | `:write(data: string) -> boolean` | native |  |
 | `close` | `:close()` | native |  |
-| `is_open` | `:is_open() -> boolean` | native | Whether the underlying fstream is open. |
+| `is_open` | `:is_open() -> boolean` | native |  |
+| `lines` | `:lines() -> string[]` | native | 1-indexed array of the remaining lines from the current cursor. |
+| `seek` | `:seek(whence?: string, offset?: integer) -> integer` | native | Move the cursor. whence = "set"\|"cur"\|"end" (default "cur"); returns the new absolute position (-1 on failure). |
+| `flush` | `:flush() -> boolean` | native | Flush buffered writes to disk. |
 
 ### GameEvent
 
@@ -1151,14 +1155,14 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 | Member | Signature | Tier | Description |
 |---|---|---|---|
-| `DrawText` | `Render.DrawText(x: number, y: number, text: string, color: Color)` | safe |  |
-| `Text` | `Render.Text(font: integer, size: number, text: string, pos: Vec2, color: Color)` | safe | Font-first draw; also accepts (x,y,text,color[,font]). |
+| `DrawText` | `Render.DrawText(x: number, y: number, text: string, color: Color, fontHandle?: integer, align?: integer)` | safe | Optional Render.TEXT_ALIGN_* (default center). |
+| `Text` | `Render.Text(font: integer, size: number, text: string, pos: Vec2, color: Color, align?: integer)` | safe | Font-first draw honoring the handle's family+weight at the per-call size; also accepts (x,y,text,color[,font,align]). Optional Render.TEXT_ALIGN_* (default center). |
 | `DrawLine` | `Render.DrawLine(x1: number, y1: number, x2: number, y2: number, color: Color, thickness: number)` | safe |  |
-| `Line` | `Render.Line(x1: number, y1: number, x2: number, y2: number, color: Color, thickness: number)` | safe | Alias of DrawLine. |
+| `Line` | `Render.Line(x1: number, y1: number, x2: number, y2: number, color: Color, thickness: number)` | safe | Also accepts (p1:Vec2, p2:Vec2, color[, thickness]). |
 | `DrawBox` | `Render.DrawBox(x1: number, y1: number, x2: number, y2: number, color: Color)` | safe |  |
 | `Rect` | `Render.Rect(x1: number, y1: number, x2: number, y2: number, color: Color)` | safe | Alias of DrawBox. |
 | `DrawFilledBox` | `Render.DrawFilledBox(x1: number, y1: number, x2: number, y2: number, color: Color)` | safe |  |
-| `FilledRect` | `Render.FilledRect(x1: number, y1: number, x2: number, y2: number, color: Color)` | safe | Alias of DrawFilledBox. |
+| `FilledRect` | `Render.FilledRect(x1: number, y1: number, x2: number, y2: number, color: Color)` | safe | Also accepts (p1:Vec2, p2:Vec2, color). |
 | `FilledRectRounded` | `Render.FilledRectRounded(p1: Vec2, p2: Vec2, color: Color, rounding: number, corner_flags?: integer)` | safe | Rounded-corner filled rect. corner_flags is an ImDrawFlags_RoundCorners* mask (Render.CORNER_*); omitted/0 rounds all four corners. |
 | `DrawFilledBoxRounded` | `Render.DrawFilledBoxRounded(p1: Vec2, p2: Vec2, color: Color, rounding: number, corner_flags?: integer)` | safe | Alias of FilledRectRounded. |
 | `RectRounded` | `Render.RectRounded(p1: Vec2, p2: Vec2, color: Color, rounding: number, thickness?: number, corner_flags?: integer)` | safe | Rounded-corner rectangle OUTLINE (DrawBox/Rect have no rounding option). corner_flags is an ImDrawFlags_RoundCorners* mask (Render.CORNER_*); omitted/0 rounds all four corners. |
@@ -1174,7 +1178,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `CORNER_ALL` | `.CORNER_ALL: integer` | safe | corner_flags value — round all four corners (the default when corner_flags is omitted). |
 | `CORNER_NONE` | `.CORNER_NONE: integer` | safe | corner_flags value — square corners (rounding has no visible effect). |
 | `DrawCircle` | `Render.DrawCircle(x: number, y: number, radius: number, color: Color)` | safe |  |
-| `Circle` | `Render.Circle(x: number, y: number, radius: number, color: Color)` | safe | Alias of DrawCircle. |
+| `Circle` | `Render.Circle(x: number, y: number, radius: number, color: Color)` | safe | Also accepts (center:Vec2, radius, color). See Render.CircleArc for rings/arcs with thickness. |
 | `DrawFilledCircle` | `Render.DrawFilledCircle(x: number, y: number, radius: number, color: Color)` | safe |  |
 | `FilledCircle` | `Render.FilledCircle(x: number, y: number, radius: number, color: Color)` | safe | Alias of DrawFilledCircle. |
 | `DrawCircle3D` | `Render.DrawCircle3D(center: Vector3, radius: number, color: Color)` | safe |  |
@@ -1183,15 +1187,27 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `ScreenSize` | `Render.ScreenSize() -> table` | safe | Returns { width, height }. |
 | `GetScreenCenter` | `Render.GetScreenCenter() -> table` | safe | Returns { x, y }. |
 | `TextCentered` | `Render.TextCentered(text: string, x: number, y: number, color: Color)` | safe |  |
-| `TextSize` | `Render.TextSize(font: integer, size: number, text: string) -> table` | safe | Returns {x,y}; also accepts (text) and (font,text). |
-| `LoadFont` | `Render.LoadFont(name: string, size?: integer, weight?: integer) -> integer` | safe | `name` unused (only "Verdana" is embedded). `weight` is a real DWRITE_FONT_WEIGHT request: Render.FONT_WEIGHT_REGULAR(400)/FONT_WEIGHT_BOLD(700) each render a genuinely distinct real Verdana face; FONT_WEIGHT_MEDIUM(500) has no real Verdana Medium face and renders as the nearest one that exists (observed: Regular). Omitted defaults to Bold (matches every font this API produced before weight support). |
+| `TextSize` | `Render.TextSize(font: integer, size: number, text: string) -> table` | safe | Returns {x,y}; also accepts (text) and (font,text). When a font/size is given it measures with the exact FW1 face Render.Text draws with (real metrics at that size). |
+| `LoadFont` | `Render.LoadFont(name: string, size?: integer, weight?: integer) -> integer` | safe | Size-INDEPENDENT font handle: `name` is a real system-font family (resolved via DirectWrite; empty/"Verdana" = the embedded default), `weight` a real DWRITE_FONT_WEIGHT (Render.FONT_WEIGHT_*). The per-call `size` in Render.Text/TextSize is honored (glyph atlas built per size); the `size` here is only the default when a draw call omits one. |
+| `LoadFontFile` | `Render.LoadFontFile(path: string, size?: integer, weight?: integer) -> integer` | safe | Load a custom .ttf/.otf (absolute path) into the process-private font set and return a size-independent font handle bound to its family. 0 on failure (open / parse / register). Behaves like a Render.LoadFont handle (honors per-call size). |
+| `FontMetrics` | `Render.FontMetrics(font: integer, size?: number) -> table` | safe | Returns { ascent, descent, line_height } measured from the same FW1 face Render.Text draws with, at `size` (or the handle's default size). |
+| `ShowVisualsEnabled` | `Render.ShowVisualsEnabled() -> boolean` | safe | The master 'lua/show_visuals' (Show Visuals) toggle. When false the engine dispatches NO script on_draw / esp.* — query this to detect the gate is off. |
 | `FONT_WEIGHT_REGULAR` | `.FONT_WEIGHT_REGULAR: integer` | safe | Render.LoadFont weight value (400) — real, distinct Verdana Regular face. |
 | `FONT_WEIGHT_MEDIUM` | `.FONT_WEIGHT_MEDIUM: integer` | safe | Render.LoadFont weight value (500) — NO real Verdana Medium face exists; DirectWrite substitutes the nearest available weight (observed: Regular). |
 | `FONT_WEIGHT_BOLD` | `.FONT_WEIGHT_BOLD: integer` | safe | Render.LoadFont weight value (700) — real, distinct Verdana Bold face; also the default when weight is omitted. |
-| `TextFont` | `TextFont` | safe |  |
+| `TEXT_ALIGN_LEFT` | `.TEXT_ALIGN_LEFT: integer` | safe | Text horizontal alignment (anchor at left). Optional trailing `align` arg on Render.Text/DrawText/TextFont. |
+| `TEXT_ALIGN_CENTER` | `.TEXT_ALIGN_CENTER: integer` | safe | Text horizontal alignment (anchor at center) — the historical default. |
+| `TEXT_ALIGN_RIGHT` | `.TEXT_ALIGN_RIGHT: integer` | safe | Text horizontal alignment (anchor at right). |
+| `TEXT_ALIGN_TOP` | `.TEXT_ALIGN_TOP: integer` | safe | Text vertical alignment (anchor at top). |
+| `TEXT_ALIGN_VCENTER` | `.TEXT_ALIGN_VCENTER: integer` | safe | Text vertical alignment (anchor at vertical center). |
+| `TEXT_ALIGN_BOTTOM` | `.TEXT_ALIGN_BOTTOM: integer` | safe | Text vertical alignment (anchor at bottom). OR a horizontal + vertical flag. |
+| `TextFont` | `Render.TextFont(fontHandle: integer, x: number, y: number, text: string, color: Color, align?: integer)` | safe | Draw with a LoadFont/LoadFontFile handle; optional Render.TEXT_ALIGN_* (default center). |
+| `FilledTriangle` | `Render.FilledTriangle(p1: Vec2, p2: Vec2, p3: Vec2, color: Color)` | safe | Filled triangle through the native deferred pipeline. |
+| `Triangle` | `Render.Triangle(p1: Vec2, p2: Vec2, p3: Vec2, color: Color)` | safe | Alias of FilledTriangle. |
+| `CircleArc` | `Render.CircleArc(center: Vec2, radius: number, color: Color, thickness?: number, start_deg?: number, frac?: number)` | safe | Arc / ring with real stroke width (cooldown rings). frac in (0,1] is the swept fraction (1 = full ring); start_deg is the clockwise start angle (0 = 3 o'clock). |
 | `WorldToScreen` | `Render.WorldToScreen(world: Vector3) -> table` | safe | Returns { x, y, visible }. |
-| `LoadImage` | `Render.LoadImage(path: string, flags?: integer) -> integer` | safe |  |
-| `Image` | `Render.Image(handle: integer, pos: Vec2, size?: Vec2, color?: Color, uv?: table, flags?: integer)` | safe |  |
+| `LoadImage` | `Render.LoadImage(path: string, flags?: integer) -> integer` | safe | Texture handle from a .vtex_c (0 on miss). Crash-safe for ANY input (decode is SEH-guarded); .vsvg_c/.svg are rasterized via the SVG path. |
+| `Image` | `Render.Image(handle: integer, pos: Vec2, size?: Vec2, color?: Color, uv1?: any, uv2?: any, uv3?: any, uv4?: any, flags?: integer, rounding?: number)` | safe | Draw an image handle. Optional trailing `rounding` rounds the corners (round avatars/icons). |
 | `ImageSize` | `ImageSize` | safe |  |
 | `ImageCentered` | `ImageCentered` | safe |  |
 | `FindOrCreateRT` | `Render.FindOrCreateRT(name: string, w: number, h: number) -> integer` | safe | Stable render-target handle per name. |
@@ -1662,7 +1678,7 @@ _No members._
 
 | Member | Signature | Tier | Description |
 |---|---|---|---|
-| `open` | `io.open(filename: string, mode?: string) -> File?` | native | Open a sandboxed file (mode default "r"); File handle \| nil. |
+| `open` | `io.open(filename: string, mode?: string) -> File?` | native | Open a file (mode default "r"); File handle \| nil. RELATIVE paths are sandboxed under %APPDATA%\Avalanche\ScriptFiles; ABSOLUTE paths are honored as-is (io is trusted-only, so this is the authorized absolute-path access for trusted/local scripts — Steam vdf/avatarcache reads, assets next to the script, config import/export). |
 | `exists` | `io.exists(filename: string) -> boolean` | native | Sandboxed path exists. |
 | `remove` | `io.remove(filename: string) -> boolean` | native | Delete a sandboxed file. |
 | `rename` | `io.rename(oldname: string, newname: string) -> boolean` | native | Rename within the sandbox (false on failure). |
