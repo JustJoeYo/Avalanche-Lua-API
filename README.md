@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**94** scopes · **1247** members · **16** globals · **36** callbacks · **3** aliases
+**94** scopes · **1251** members · **16** globals · **36** callbacks · **3** aliases
 
 **Trust tiers:** `safe` (available to every script, default) · `native` (low-level / powerful — enable explicitly) · `trusted` (restricted).
 
@@ -188,7 +188,11 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `list_properties` | `:list_properties() -> table` | safe | Enumerate every authored VData property as { PropertyName = scaledValue } (force-populated, upgrade-aware). Use it to discover a property's EXACT field name. |
 | `get_property` | `:get_property(name: string) -> number` | safe |  |
 | `get_cast_range` | `:get_cast_range() -> number` | safe |  |
-| `get_aoe_radius` | `:get_aoe_radius() -> number` | safe |  |
+| `get_aoe_radius` | `:get_aoe_radius() -> number` | safe | AoE radius in UNITS by PROBING property keys (Radius/AOERadius/...). For the engine-exact value prefer game_aoe_radius(). |
+| `targeting_shape` | `:targeting_shape() -> integer` | safe | The GAME'S cast SHAPE (EAbilityTargetingShape_t) via the engine's own getter: 2=line/trajectory, 3=AoE circle, 4=cone, 5=radius. 0 = none/invalid. Use it to know how an ability actually targets (e.g. shape==4 => cone). |
+| `targeting_cone_angle` | `:targeting_cone_angle() -> number` | safe | The ability's cone spread in DEGREES, UPGRADE-AWARE (the game's own getter, not the base VData field — so it reflects scaling items). FULL angle: a target is inside the cone when its angular deviation from the aim axis is <= angle/2. 0 if no cone. |
+| `targeting_cone_half_width` | `:targeting_cone_half_width() -> number` | safe | The cone's near-field half-width the preview draws alongside the angular spread (game's own getter, upgrade-aware). 0 if unauthored. |
+| `game_aoe_radius` | `:game_aoe_radius() -> number` | safe | The AoE-circle radius the ENGINE draws (units), from the ability's OWN virtual — UPGRADE-AWARE (folds in Greater Expansion etc.), vs get_aoe_radius's property-key probe. 0 for a non-AoE ability. (Build-specific vtable slot; re-verified via snowpack on patches.) |
 | `get_slot` | `:get_slot() -> integer` | safe |  |
 | `get_level` | `:get_level() -> integer` | safe |  |
 | `get_target` | `:get_target() -> PlayerPawn\|nil` | safe |  |
