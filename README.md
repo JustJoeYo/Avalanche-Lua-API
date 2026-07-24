@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**94** scopes · **1252** members · **16** globals · **36** callbacks · **3** aliases
+**94** scopes · **1253** members · **16** globals · **36** callbacks · **3** aliases
 
 **Trust tiers:** `safe` (available to every script, default) · `native` (low-level / powerful — enable explicitly) · `trusted` (restricted).
 
@@ -1125,7 +1125,8 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `run_combo_sequence` | `HERO_LIB.run_combo_sequence(state: table, fns: function[]) -> boolean` | safe | Step-cycling one-per-tick fall-through. |
 | `is_busy` | `HERO_LIB.is_busy() -> boolean` | safe | Local hero mid-action (BUSY_WITH_ACTION). |
 | `is_cc` | `HERO_LIB.is_cc() -> boolean` | safe | Local hero HARD-BLOCKED (stunned/silenced/asleep). The other half of combo_interrupt_status()'s "blocked": blocked <=> is_busy() or is_cc(). |
-| `recently_cast` | `HERO_LIB.recently_cast(ability: Ability, recovery?: number) -> boolean` | safe | Charge-dump spacing guard. |
+| `recently_cast` | `HERO_LIB.recently_cast(ability: Ability, recovery?: number) -> boolean` | safe | Charge-dump spacing guard — FALSE for any non-charge ability; use time_since_cast to ask 'did we just cast this?'. |
+| `time_since_cast` | `HERO_LIB.time_since_cast(ability: Ability) -> number` | safe | Seconds since the cast began, -1 if never cast. Charge-independent. |
 | `fired_this_combo` | `HERO_LIB.fired_this_combo(ability: Ability) -> boolean` | safe | One fire per ability per discrete combo. |
 | `ability_in_range` | `HERO_LIB.ability_in_range(lp: PlayerPawn, ability: Ability, target: PlayerPawn, extra_m?: number) -> boolean` | safe | Real cast range + slack (fail-open). |
 | `lock_on_ready` | `HERO_LIB.lock_on_ready(lp: PlayerPawn, cmd: UserCmd, ability: Ability, target: PlayerPawn, extra_m?: number) -> boolean` | safe | Range AND camera-position psilent reach. |
