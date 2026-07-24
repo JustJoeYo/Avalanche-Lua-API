@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**94** scopes · **1251** members · **16** globals · **36** callbacks · **3** aliases
+**94** scopes · **1252** members · **16** globals · **36** callbacks · **3** aliases
 
 **Trust tiers:** `safe` (available to every script, default) · `native` (low-level / powerful — enable explicitly) · `trusted` (restricted).
 
@@ -193,6 +193,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `targeting_cone_angle` | `:targeting_cone_angle() -> number` | safe | The ability's cone spread in DEGREES, UPGRADE-AWARE (the game's own getter, not the base VData field — so it reflects scaling items). FULL angle: a target is inside the cone when its angular deviation from the aim axis is <= angle/2. 0 if no cone. |
 | `targeting_cone_half_width` | `:targeting_cone_half_width() -> number` | safe | The cone's near-field half-width the preview draws alongside the angular spread (game's own getter, upgrade-aware). 0 if unauthored. |
 | `game_aoe_radius` | `:game_aoe_radius() -> number` | safe | The AoE-circle radius the ENGINE draws (units), from the ability's OWN virtual — UPGRADE-AWARE (folds in Greater Expansion etc.), vs get_aoe_radius's property-key probe. 0 for a non-AoE ability. (Build-specific vtable slot; re-verified via snowpack on patches.) |
+| `activation_order` | `:activation_order() -> integer` | safe | The GAME'S OWN ECitadelAbilityOrders cast-validity for THIS ability right now — the exact code that greys/blacks its HUD icon. 0 = Success (castable). 10 = BusyWithAction: blocked because the hero is mid ability animation (the state where all other abilities black out). Other codes = cooldown/charge/silence/etc. GetAbilityActivationOrder (vtable slot 266), a pure query. Truthful when the aggregate BUSY_WITH_ACTION modifier lags a busy animation. -1 on a dead ability. (Build-specific slot; re-verify via snowpack on patches.) |
 | `get_slot` | `:get_slot() -> integer` | safe |  |
 | `get_level` | `:get_level() -> integer` | safe |  |
 | `get_target` | `:get_target() -> PlayerPawn\|nil` | safe |  |
