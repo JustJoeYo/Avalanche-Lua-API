@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**94** scopes · **1298** members · **16** globals · **40** callbacks · **3** constants
+**94** scopes · **1299** members · **16** globals · **40** callbacks · **3** constants
 
 **Trust tiers:** `safe` (available to every script, default) · `privileged` (low-level / powerful — TRUSTED scripts only) · `internal` (engine-only).
 
@@ -1386,6 +1386,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `Begin` | `Begin` | safe |  |
 | `End` | `End` | safe |  |
 | `Window` | `Window` | safe |  |
+| `CaptureInput` | `:CaptureInput()` | safe | Gives your windows the mouse and keyboard for this frame, the way the open menu has them: the cursor shows, mouse look pauses and the game stops receiving input. Call it from on_draw on every frame your interactive window is open (e.g. while your own toggle key has it shown); stop calling it and the game gets its input back on the next frame, so closing the window, unloading the script or a script error all release it. Never call it for a HUD or overlay window. Takes effect only while the game window has focus. |
 | `SetNextWindowSize` | `SetNextWindowSize` | safe |  |
 | `SetNextWindowPos` | `SetNextWindowPos` | safe |  |
 | `SetNextItemWidth` | `SetNextItemWidth` | safe |  |
