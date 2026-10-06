@@ -1723,7 +1723,7 @@ _No members._
 | `angle_diff` | `:angle_diff(a: number, b: number) -> number` | safe | Shortest signed difference a-b in degrees, wrapped to [-180, 180]. |
 | `lerp` | `:lerp(a: number, b: number, t: number) -> number` | safe | Linear interpolation a + (b-a)*t (t not clamped). |
 | `clamp` | `:clamp(value: number, min: number, max: number) -> number` | safe | Clamp value to [min, max]. |
-| `execute_command` | `:execute_command(command: string) -> boolean` | safe | Run a client console command via IVEngineToClient::ExecuteClientCmd (e.g. "play <sound>"). COMMAND execution only, never a ConVar write. SEH-guarded; returns false (never throws) on an empty command, an unresolved engine interface, or a caught native fault. |
+| `execute_command` | `:execute_command(command: string) -> boolean` | safe | Run a client console command via IVEngineToClient::ExecuteClientCmd (e.g. "play <sound>"). COMMAND execution only, never a ConVar write. SEH-guarded; returns false (never throws) on an empty command, an unresolved engine interface, or a caught native fault. Your own panel: after "hud_free_cursor 1" and until "hud_free_cursor 0" (or your script unloads), clicks and wheel turns on the filled shapes your script draws (Render.FilledRect, FilledRectRounded, Gradient, FrostedFill, Image, draw.filled_rect; at least 8 px each way and not near-transparent) go to your script only, never the game. Mouse movement, keys and clicks anywhere else still reach the game, and nothing is taken while the game is in mouse look. |
 
 ### draw
 
