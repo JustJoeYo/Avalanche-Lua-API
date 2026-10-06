@@ -1439,8 +1439,8 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `GetMousePos` | `:GetMousePos() -> table` | safe | Returns { x, y }. |
 | `get_cursor_pos` | `get_cursor_pos` | safe |  |
 | `GetMouseDelta` | `GetMouseDelta` | safe |  |
-| `mouse_wheel` | `:mouse_wheel() -> integer` | safe | Vertical mouse-wheel delta accumulated since the last call (WHEEL_DELTA=120 units; +away from user / -toward). Consumes the accumulator (exchange-to-0) so a per-frame poll never double-counts a notch. |
-| `mouse_wheel_h` | `:mouse_wheel_h() -> integer` | safe | Horizontal mouse-wheel delta since the last call (shift-scroll / tilt-wheel, WM_MOUSEHWHEEL). Same units/consume semantics as mouse_wheel(). |
+| `mouse_wheel` | `:mouse_wheel() -> integer` | safe | Vertical mouse-wheel delta accumulated since the last call: 120 per notch (WHEEL_DELTA); touchpads give smaller values. +away from user / -toward. Consumes the accumulator; every read in one frame returns the same value, so a per-frame poll never double-counts a notch. |
+| `mouse_wheel_h` | `:mouse_wheel_h() -> integer` | safe | Horizontal mouse-wheel delta since the last call (shift-scroll / tilt-wheel, WM_MOUSEHWHEEL): 120 per notch (WHEEL_DELTA); touchpads give smaller values. Same consume semantics as mouse_wheel(). |
 | `is_menu_open` | `:is_menu_open() -> boolean` | safe | True while the Avalanche menu is open (uses fw::menu::open_intent). |
 | `IsMenuOpen` | `:IsMenuOpen() -> boolean` | safe |  |
 | `menu_open` | `:menu_open() -> boolean` | safe |  |
