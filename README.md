@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**94** scopes · **1299** members · **16** globals · **40** callbacks · **3** constants
+**94** scopes · **1300** members · **16** globals · **40** callbacks · **3** constants
 
 **Trust tiers:** `safe` (available to every script, default) · `privileged` (low-level / powerful — TRUSTED scripts only) · `internal` (engine-only).
 
@@ -641,6 +641,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 | `launch_angle` | `:launch_angle(ability: Ability) -> table\|nil` | safe |  |
 | `fastest_projectile` | `:fastest_projectile() -> table\|nil` | safe |  |
 | `simulate_physics` | `:simulate_physics(start_pos: Vector3, start_vel: Vector3, gravity: number, time: number, step?: number) -> table\|nil` | safe |  |
+| `gravity` | `:gravity(pawn?: PlayerPawn) -> number\|nil` | safe | Bullet drop of the pawn's current primary weapon in units/s^2, read live from its weapon data (m_flBulletGravityScale x 800; 0 = no drop). Same value the aimbot leads with, and the unit prediction.aim_angles takes as gravity. Defaults to the local pawn; nil when there is no pawn or its weapon data cannot be read. |
 
 ### nav
 
@@ -1944,7 +1945,7 @@ _No members._
 | Member | Signature | Tier | Description |
 |---|---|---|---|
 | `Speed` | `.Speed: number` | safe | Bullet speed (game units/sec). |
-| `Gravity` | `.Gravity: number` | safe | Bullet gravity scalar. |
+| `Gravity` | `.Gravity: number` | safe | Bullet drop in units/s^2 (m_flBulletGravityScale x 800; 0 = no drop). |
 | `Radius` | `.Radius: number` | safe | Bullet hull radius (game units). |
 | `WorldRadius` | `.WorldRadius: number` | safe | World-collision radius (game units). |
 | `InheritVelScale` | `.InheritVelScale: number` | safe | Fraction of shooter velocity inherited by the projectile. |
