@@ -4,7 +4,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
 
 > **Auto-generated — do not edit.** Derived from the in-game registry (`Avalanche LuaApiRegistry`, schema v1) via `npm run gen-lua-api`. For the full interactive docs (with prose walkthroughs, worked example scripts, and search) see **https://avalan.cc/developers/lua**.
 
-**129** scopes · **4167** members · **76** globals · **60** callbacks · **3** constants
+**130** scopes · **4173** members · **76** globals · **61** callbacks · **3** constants
 
 **Trust tiers:** `safe` (available to every script, default) · `privileged` (low-level / powerful — TRUSTED scripts only) · `internal` (engine-only).
 
@@ -75,6 +75,7 @@ Flat, exhaustive reference of the **entire** Avalanche Lua scripting API.
   - [ANIM_LIB](#anim_lib)
   - [Render](#render)
   - [Menu](#menu)
+  - [Preview](#preview)
   - [Aim](#aim)
   - [callback](#callback)
   - [ImGui](#imgui)
@@ -2749,6 +2750,18 @@ _No members._
 | `Opened` | `Menu.Opened() -> boolean` | safe | Returns true while the Avalanche overlay menu is currently visible. |
 | `Panel` | `Menu.Panel(row: MenuNode, opts: table) -> MenuPanel\|nil` | safe | A HUD panel placement owned by one of the script's Switch or Combo rows, kept like the native overlays' (a screen cell + offset, or a dragged position; own or HUD scale and opacity) and edited from the row's "...". opts = { id (1-31 of a-z 0-9 _), cell (0..8, top-left to bottom-right row by row; default 4) }. nil after a console error. |
 
+### Preview
+
+`table` · tier `safe` — ESP preview plate integration: scripts draw their own elements on the in-menu preview plate and register toggles in its element checklist. Register with Preview.register_element(key, label, default_on); the returned token drives Preview.is_element_enabled. Preview.on_draw(fn) fires every frame the plate is visible with a plate table { x, y, w, h } in screen pixels; use the regular draw.* primitives inside — they are retargeted to the plate's own drawlist and clipped to the stage. Elements are bound to the script that registered them and cleared on unload.
+
+| Member | Signature | Tier | Description |
+|---|---|---|---|
+| `register_element` | `Preview.register_element(key: string, label: string, default_on: boolean?) -> integer` | safe | Register a new entry in the preview plate's element checklist (next to Name, Health Bar, etc). key is a stable per-script id. label is the text shown in the chip. default_on seeds the initial state (default false). Returns a token to pass to Preview.is_element_enabled / Preview.set_element_enabled / Preview.unregister_element. Re-registering the same (script, key) updates the label and returns the existing token. Elements are cleared on script unload. Returns 0 on bad arguments. |
+| `is_element_enabled` | `Preview.is_element_enabled(token: integer) -> boolean` | safe | Current enabled state of a registered element. Scripts should guard their Preview.on_draw painting with this so the user's toggle in the plate chip-row actually takes effect. |
+| `set_element_enabled` | `Preview.set_element_enabled(token: integer, on: boolean)` | safe | Script-side override of a registered element's enabled state. The user's click on the chip remains authoritative; this is for seeding presets or exposing Preview toggles through the hero config. |
+| `unregister_element` | `Preview.unregister_element(token: integer)` | safe | Remove an element from the plate's checklist. Normally unnecessary: elements are cleared automatically on script unload. |
+| `on_draw` | `Preview.on_draw(fn: function) -> integer` | safe | Install a callback that fires every frame the ESP preview plate is visible. The plate table carries the stage rect in screen pixels. draw.* calls inside the callback paint onto the plate's own drawlist (clipped to the stage), so they land above the hero model and below the plate's chrome/element overlays. Returns a handler id. |
+
 ### Aim
 
 `table` · tier `safe` — Aim helpers (psilent + world-to-screen).
@@ -2787,6 +2800,7 @@ _No members._
 | `on_createmove` | `on_createmove` | safe | Channel handle for the createmove channel; handlers receive this tick's UserCmd on the game thread after native features have written it. |
 | `on_frame` | `on_frame` | safe | Channel handle for the frame channel; handlers run per rendered frame via Vm::DispatchFrame with no arguments. |
 | `on_draw` | `on_draw` | safe | Channel handle for the draw channel; handlers run inside the overlay draw pass with no arguments and should issue only Render/ImGui calls. |
+| `on_preview_draw` | `on_preview_draw` | safe | Channel handle for the ESP preview plate's own draw pass; handlers get (plate) where plate.x/y/w/h is the stage rect in screen pixels. draw.* primitives inside are retargeted to the plate's drawlist and clipped to the stage. Same channel Preview.on_draw installs onto. |
 | `on_add_modifier` | `on_add_modifier` | safe | Channel handle; handlers get (mod, holder_handle, modifier, target, caster) (see the on_add_modifier event). NEW: an optional filter, :set(fn, { modifiers = { name, ... } }) (also :add and callback.add): the handler fires only for those modifier names (case-insensitive), checked natively before Lua runs; without it the handler gets every event. |
 | `on_remove_modifier` | `on_remove_modifier` | safe | Channel handle; handlers get (mod, holder_handle, modifier_name, target, caster) (see the on_remove_modifier event). NEW: an optional filter, :set(fn, { modifiers = { name, ... } }) (also :add and callback.add): the handler fires only for those modifier names (case-insensitive), checked natively before Lua runs; without it the handler gets every event. |
 | `on_bullet_create` | `on_bullet_create` | safe | Channel handle for the bullet_create channel; handlers receive a table (origin/start_pos, direction, angles, max_range, bullet_speed_override, weapon_subclass_id, ability_as_bullet, fired_from_gun, and when resolvable shooter/entity and weapon_name). |
@@ -4740,6 +4754,7 @@ Register a handler and the engine calls it on the matching event.
 | `on_user_message` | `on_user_message(id: integer, bytes: string) -> boolean` | safe | Fires on an incoming user message; receives (msg_id, bytes); return true to swallow the message. |
 | `on_net_message` | `on_net_message(id: integer, bytes: string) -> boolean` | safe | Fires on an incoming net message; receives (msg_id, bytes); return true to swallow the message. |
 | `on_draw` | `on_draw()` | safe | Primary render callback — fires every frame on the RENDER thread. Do 2D/3D drawing (Render / ImGui / Aim world-to-screen) here, not game-thread entity reads. |
+| `on_preview_draw` | `on_preview_draw(plate: table)` | safe | Shorthand for Preview.on_draw. Fires every frame the in-menu ESP preview plate is visible (Visuals tab, Enemies or Allies section, or Entities takeover). plate is the stage rect in screen pixels. Use the regular draw.* primitives with plate.x + offset coordinates; they are retargeted to the plate's drawlist and clipped to the stage. |
 | `on_pre_createmove` | `on_pre_createmove(cmd: UserCmd)` | safe | Game thread. Runs just BEFORE on_createmove on the same per-tick UserCmd — for logic that must precede the main movement/aim handler. |
 | `on_add_modifier` | `on_add_modifier(mod: lightuserdata, holder_handle: lightuserdata, modifier: Modifier\|nil, target: PlayerPawn\|Entity\|nil, caster: PlayerPawn\|Entity\|nil)` | safe | Game thread. A modifier (buff/debuff) was added to an entity. Handlers get (mod, holder_handle, modifier, target, caster): mod is the modifier and holder_handle the holder's entity handle, both light userdata (as before); modifier is the Modifier usertype; target is the entity holding it and caster the modifier's caster (PlayerPawn for a hero pawn, else Entity; nil when gone). The last three are nil off the game thread. CHANGED: the last three arguments are new; earlier docs called the first two (Modifier, PlayerPawn), which they never were. Alias of on_modifier_added (same handler slot). |
 | `on_remove_modifier` | `on_remove_modifier(mod: lightuserdata, holder_handle: lightuserdata, modifier_name: string\|nil, target: PlayerPawn\|Entity\|nil, caster: PlayerPawn\|Entity\|nil)` | safe | Game thread. Fires just BEFORE the engine frees a modifier: read it now, do NOT retain the pointer. Handlers get (mod, holder_handle, modifier_name, target, caster): mod and holder_handle are light userdata as before; modifier_name is the modifier's name (the modifier is freed right after the event); target / caster as on_add_modifier. CHANGED: the last three arguments are new. Alias of on_modifier_removed (same handler slot). |
